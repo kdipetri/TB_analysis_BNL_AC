@@ -1,13 +1,10 @@
-from style import setStyle
 from common import *
 import os, sys, re
 import ROOT
 
-setStyle()
-dut=12
 
 #thresholds = [100]
-thresholds = [50,60,70,80,90,100,110,120,200]
+thresholds = [50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200]
 
 #config_211_4_13_12_photek
 #config_212_4_3_14_photek
@@ -40,8 +37,8 @@ def get_efficiency_v_x(tree,config,ch,ch_name,thresh,output):
     region = "x_dut[{}]>{}&&x_dut[{}]<{}&&y_dut[{}]>{}&&y_dut[{}]<{}".format(dut,minx,dut,maxx,dut,miny,dut,maxy)
     
     sel = "amp[%i]>%i"%(ch,thresh)
-    tree.Project("h_num_{}_amp{}".format(ch_name,thresh),"x_dut[%i]"%dut,"{}&&{}&&{}".format(track_sel,region,sel))
-    tree.Project("h_den_{}_amp{}".format(ch_name,thresh),"x_dut[%i]"%dut,"{}&&{}".format(track_sel,region))
+    tree.Project("h_num_{}_amp{}".format(ch_name,thresh),"x_dut[%i]"%dut,"{}&&{}&&{}&&{}".format(track_sel,region,sel,photek))
+    tree.Project("h_den_{}_amp{}".format(ch_name,thresh),"x_dut[%i]"%dut,"{}&&{}&&{}".format(track_sel,region,photek))
 
     hist = hnum.Clone("h_eff_{}_amp{}".format(ch_name,thresh))
     hist.Divide(hnum,hden,1,1,"B")
@@ -83,7 +80,7 @@ def plot_overlay(infos,thresh,output,opt=""):
             hist.Fit(f1,"Q")
             cleanFit(f1,i)
             f1.Draw("same")
-            print(ch_name,f1.GetParameter(1))
+            print(ch_name,f1.GetParameter(1),f1.GetParameter(2))
         
         leg.AddEntry(hist,"Channel {}".format(ch_name),"l")
 
@@ -118,6 +115,7 @@ def make_plots():
 
     for thresh in thresholds: 
         plot_overlay(infos,thresh,output)
+        if thresh == 110 : plot_overlay(infos,thresh,output,"fit")
         if thresh == 200 : plot_overlay(infos,thresh,output,"fit")
     return
 
