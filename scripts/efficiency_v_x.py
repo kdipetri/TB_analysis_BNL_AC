@@ -3,8 +3,9 @@ import os, sys, re
 import ROOT
 
 
-#thresholds = [100]
-thresholds = [50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200]
+thresholds = [100]
+#thresholds = [50,60,70,80,90,100,110,200]
+#thresholds = [50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200]
 
 #config_211_4_13_12_photek
 #config_212_4_3_14_photek
@@ -36,16 +37,20 @@ def get_efficiency_v_x(tree,config,ch,ch_name,thresh,output):
 
     region = "x_dut[{}]>{}&&x_dut[{}]<{}&&y_dut[{}]>{}&&y_dut[{}]<{}".format(dut,minx,dut,maxx,dut,miny,dut,maxy)
     
-    sel = "amp[%i]>%i"%(ch,thresh)
+    if thresh >= 110 : sel = "amp[%i]>%i"%(ch,thresh) 
+    else : sel = "amp[%i]>%i && t_peak[%i]-LP2_20[3]>3e-9 && t_peak[%i]-LP2_20[3]<5e-9"%(ch,thresh,ch,ch)
+
     tree.Project("h_num_{}_amp{}".format(ch_name,thresh),"x_dut[%i]"%dut,"{}&&{}&&{}&&{}".format(track_sel,region,sel,photek))
     tree.Project("h_den_{}_amp{}".format(ch_name,thresh),"x_dut[%i]"%dut,"{}&&{}&&{}".format(track_sel,region,photek))
 
     hist = hnum.Clone("h_eff_{}_amp{}".format(ch_name,thresh))
     hist.Divide(hnum,hden,1,1,"B")
+    hist.GetYaxis().SetTitle("Efficiency, {} mV".format(thresh))
 
 
     c = ROOT.TCanvas()
     hist.Draw()
+    
     c.Print("plots/efficiency_v_x/{}_effx_amp{}.pdf".format(ch_name,thresh))
     output.cd()
     hist.Write()
@@ -58,6 +63,7 @@ def plot_overlay(infos,thresh,output,opt=""):
     ROOT.gStyle.SetOptFit(0)
     c = ROOT.TCanvas("c","",1000,500)
     leg = ROOT.TLegend(0.73,0.2,0.88,0.88)
+    leg.SetBorderSize(0)
     for i,info in enumerate(infos):  
         
         ch_name = info[0]
@@ -65,7 +71,7 @@ def plot_overlay(infos,thresh,output,opt=""):
         hist = output.Get("h_eff_{}_amp{}".format(ch_name,thresh))
         hist.SetMaximum(1.1)
         hist.SetMinimum(0)
-        hist.GetYaxis().SetTitle("Efficiency (amp >{} mV)".format(thresh))
+        hist.GetYaxis().SetTitle("Efficiency, {} mV".format(thresh))
         hist.GetXaxis().SetTitle("x [mm]")
         hist.SetTitle("")
         cleanHist(hist,i)
@@ -85,6 +91,8 @@ def plot_overlay(infos,thresh,output,opt=""):
         leg.AddEntry(hist,"Channel {}".format(ch_name),"l")
 
     leg.Draw()
+    ROOT.gPad.SetTickx()
+    ROOT.gPad.SetTicky()
     if "fit" in opt: c.Print("plots/efficiency_v_x/eff_{}amp_fit.pdf".format(thresh)) 
     else: c.Print("plots/efficiency_v_x/eff_{}amp.pdf".format(thresh))
 

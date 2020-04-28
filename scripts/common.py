@@ -1,8 +1,8 @@
 import ROOT
 
 dut=12
-track_sel = "ntracks==1&&nplanes>15&&npix>2&&nback>1&&abs(yResidBack)<500&&abs(xResidBack)<500"
-photek = "amp[3]>50&&amp[3]<250"
+track_sel = "ntracks==1&&nplanes>17&&npix>3&&nback>1&&abs(yResidBack)<300&&xResidBack>40&&xResidBack<260"
+photek = "amp[3]>50&&amp[3]<250&&LP2_20[3]!=0"
 
 one   = ROOT.TColor(2001,0.906,0.153,0.094)
 two   = ROOT.TColor(2002,0.906,0.533,0.094)
@@ -95,6 +95,7 @@ def cleanHist(hist,i,opt=""):
     col = colors[index]
     if "blue" in opt: col = colors_blue[index]
     hist.SetLineColor(col)
+    hist.SetLineWidth(2)
     hist.SetMarkerColor(col)
     size, style = 1.0, 20
     #if ucsc : style += 1
@@ -117,6 +118,8 @@ def setStyle():
     ROOT.gStyle.SetTitleSize(0.06,"t")
     ROOT.gStyle.SetPadBottomMargin(0.14)
     ROOT.gStyle.SetPadLeftMargin(0.14)
+    ROOT.gStyle.SetPadTickX(1)
+    ROOT.gStyle.SetPadTickY(1)
     ROOT.gStyle.SetTitleOffset(1,'y')
     ROOT.gStyle.SetLegendTextSize(0.035)
     ROOT.gStyle.SetGridStyle(3)
