@@ -15,20 +15,28 @@ setStyle()
 
 # channel name, scope ch, adjacent channel, scope ch, config
 infos=[]
-infos.append([4 , 0, 4 , 0, "config_211_4_13_12_photek"])
-infos.append([4 , 0, 13, 1, "config_211_4_13_12_photek"])
-infos.append([4 , 0, 3 , 1, "config_212_4_3_14_photek"])
 infos.append([4 , 0, 14, 2, "config_212_4_3_14_photek"])
+infos.append([4 , 0, 3 , 1, "config_212_4_3_14_photek"])
+infos.append([4 , 0, 13, 1, "config_211_4_13_12_photek"])
+infos.append([4 , 0, 4 , 0, "config_211_4_13_12_photek"])
 
 def label(i,opt):
     label = "Track in " 
     if "hit" in opt: label = "Track & hit in " 
-    if i==0: label+= "channel 4"
-    elif i==1: label+= "1st adjacent channel"
-    elif i==2: label+= "2nd adjacent channel"
-    elif i==3: label+= "3rd adjacent channel"
+    if i==3: label+= "strip"
+    elif i==2: label+= "1st adjacent strip"
+    elif i==1: label+= "2nd adjacent strip"
+    elif i==0: label+= "3rd adjacent strip"
     else : return ""
     return label 
+
+def rebin(i,opt):
+    if   i==3: rebin = 5 
+    elif i==2: rebin = 5
+    elif i==1: rebin = 5
+    elif i==0: rebin = 5
+    else : rebin = 0 
+    return rebin 
 
 def get_landau_charge(tree,ch,ch_name,adj_ch,adj_name,output,opt=""): 
     
@@ -89,7 +97,7 @@ def plot_overlay_charge(infos,output,opt=""):
 def get_landau(tree,ch,ch_name,adj_ch,adj_name,output,opt=""): 
     
     histname = "h_amp_ch_{}_track{}_in_{}".format(ch_name,opt,adj_name)
-    hist = ROOT.TH1D(histname,";amplitude [mV]",60,0,1200)
+    hist = ROOT.TH1D(histname,";amplitude [mV]",240,0,1200)
 
     print(ch,ch_name,adj_ch,adj_name)
     track_pos = in_strip(adj_name)
@@ -116,6 +124,7 @@ def plot_overlay(infos,output,opt=""):
     c.SetBottomMargin(0.15)
     leg = ROOT.TLegend(0.3,0.65,0.88,0.88)
     leg.SetBorderSize(0)
+    hists=[]
     for i,info in enumerate(infos):  
         
         ch_name = info[0]
@@ -123,24 +132,33 @@ def plot_overlay(infos,output,opt=""):
     
         histname = "h_amp_ch_{}_track{}_in_{}".format(ch_name,opt,adj_name)
         hist = output.Get(histname)
+    
+        if rebin(i,opt) != 0: hist.Rebin(rebin(i,opt)) 
         hist.Scale(1.0/hist.Integral(0,-1))
-        hist.SetMaximum(0.55)
-        hist.SetMinimum(0)
+        hist.SetMaximum(1.0)
+        #hist.SetMinimum(0)
+        hist.SetMinimum(0.004)
         hist.GetYaxis().SetTitle("Fraction of Events")
-        hist.GetXaxis().SetTitle("Channel 4 Amplitude [mV]")
+        hist.GetXaxis().SetTitle("Amplitude [mV]")
         hist.GetYaxis().SetNdivisions(505)
         hist.GetXaxis().SetNdivisions(505)
-        hist.GetYaxis().SetTitleOffset(1.1)
+        hist.GetYaxis().SetTitleOffset(1.2)
         hist.SetTitle("")
-        cleanHist(hist,i)
+        cleanHist(hist,3-i)
 
         if i==0: hist.Draw("hist")
         else: hist.Draw("histsame")
+        hists.append(hist)
         
-        leg.AddEntry(hist,label(i,opt),"l")
+    leg.AddEntry(hists[3],label(3,opt),"l")
+    leg.AddEntry(hists[2],label(2,opt),"l")
+    leg.AddEntry(hists[1],label(1,opt),"l")
+    leg.AddEntry(hists[0],label(0,opt),"l")
 
     leg.Draw()
+    c.SetLogy(1)
     c.Print("plots/landau/plot_amp_ch_{}_track{}.pdf".format(ch_name,opt))
+    c.SetLogy(0)
 
 def make_histos():
     # Loop through configurations 

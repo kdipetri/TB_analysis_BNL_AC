@@ -6,7 +6,8 @@ import ROOT
 outfile = ROOT.TFile("plots/position/tmp.root","RECREATE")
 def get_position(tree,cfg,ch,ch_name):
     
-    minAmp = 110 # for now 
+    #minAmp = 110 # for now 
+    minAmp = 100 # for now 
 
     nx = 70
     ny = 70
@@ -34,6 +35,7 @@ def get_position(tree,cfg,ch,ch_name):
     hist.GetZaxis().SetRangeUser(0,1)
     hist.GetZaxis().SetTitle("Efficiency, {} mV".format(minAmp))
     hist.GetXaxis().SetNdivisions(505)
+    hist.GetYaxis().SetNdivisions(505)
     c = ROOT.TCanvas()
     hist.Draw("COLZ") 
     c.Print("plots/position/{}_ch{}_eff_xy.pdf".format(cfg,ch_name))
@@ -57,6 +59,7 @@ def get_cfg_results(cfg):
     ch_names.append(cfg.split("_")[4])
 
     for ch,ch_name in enumerate(ch_names):
+        if ch_name != "14" and ch_name != "6" : continue
         get_position(tree,config,ch,ch_name) 
      
 

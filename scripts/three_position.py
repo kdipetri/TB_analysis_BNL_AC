@@ -141,15 +141,20 @@ def amp_overlay( output ):
 
     c = ROOT.TCanvas("amp_overlay")
     leg = ROOT.TLegend(0.6,0.7,0.88,0.88)
+    leg.SetBorderSize(0)
     for i,hist in enumerate(hists) :
         cleanHist(hist,col_index(channels[i]))
-        leg.AddEntry(hist,"Channel {}".format(channels[i]))
+        leg.AddEntry(hist,"Channel {}".format(channels[i]),"l")
         if i==0: 
             hist.Draw("hist")
-            hist.GetYaxis().SetRangeUser(0,700)
-            hist.GetYaxis().SetTitle("mean amplitude [mV]")
+            hist.GetYaxis().SetRangeUser(0,800)
+            hist.GetYaxis().SetNdivisions(505)
+            hist.GetYaxis().SetTitle("Mean Amplitude [mV]")
         else : hist.Draw("histsame")
     leg.Draw()
+    lin = ROOT.TLine(20.25,110,20.85,110)
+    lin.SetLineStyle(3)
+    lin.Draw()
     c.Print("plots/three_position/overlay_amp.pdf")
     
 def pos_overlay( output ):
@@ -276,9 +281,9 @@ def make_histos():
 
     tree = get_tree(cfg)
 
-    plot_v_x(tree,"charge",0, 4,output)
-    plot_v_x(tree,"charge",1,13,output)
-    plot_v_x(tree,"charge",2,12,output)
+    #plot_v_x(tree,"charge",0, 4,output)
+    #plot_v_x(tree,"charge",1,13,output)
+    #plot_v_x(tree,"charge",2,12,output)
 
     plot_v_x(tree,"amp",0, 4,output)
     plot_v_x(tree,"amp",1,13,output)
@@ -308,7 +313,7 @@ def make_plots():
     ROOT.gStyle.SetOptStat(0)
     output = ROOT.TFile.Open("plots/three_position/tmp.root")
     amp_overlay(output)
-    charge_overlay(output)
+    #charge_overlay(output)
     #pos_overlay(output)
     #CR_overlay(output,"2hit")
     #CR_overlay(output,"3hit")
